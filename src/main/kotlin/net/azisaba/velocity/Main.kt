@@ -8,6 +8,10 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
+import kotlinx.serialization.json.Json
+import net.azisaba.data.config.ConfigHolder
+import net.azisaba.graph.ApiClient
+import net.azisaba.graph.api.PlayersApi
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.TranslationStore
@@ -16,6 +20,11 @@ import java.nio.file.Path
 import java.text.MessageFormat
 import java.util.*
 
+private val jsonFormat = Json {
+    prettyPrint = true
+    ignoreUnknownKeys = true
+}
+
 @Plugin(id = AzisabaVelocity.NAMESPACE)
 class Main @Inject constructor(
     private val server: ProxyServer,
@@ -23,6 +32,16 @@ class Main @Inject constructor(
     @DataDirectory private val dataDirectory: Path,
     suspendingPluginContainer: SuspendingPluginContainer,
 ) {
+    val config: ConfigHolder<Config> = ConfigHolder(Config.serializer(), jsonFormat).apply {
+        bootstrap(dataDirectory.resolve("config.json"), Config())
+    }
+
+    val apiClient: ApiClient = ApiClient().setRequestInterceptor { request ->
+        request.header("Authentication", "Bearer ${config.get().graphApiKey}")
+    }
+
+    val playersApi: PlayersApi = PlayersApi(apiClient)
+
     private val translationStore: TranslationStore.StringBased<MessageFormat> =
         TranslationStore.messageFormat(Key.key(AzisabaVelocity.NAMESPACE, "translations"))
 
