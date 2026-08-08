@@ -1,4 +1,4 @@
-package src.azisaba.velocity
+package net.azisaba.velocity
 
 import net.kyori.adventure.key.KeyPattern
 
