@@ -1,0 +1,26 @@
+[versions]
+kotlin = "2.4.0"
+shadow = "9.6.0"
+
+kotlinx-coroutines = "1.10.2"
+kotlinx-serialization = "1.11.0"
+velocity = "3.5.0-SNAPSHOT"
+mccoroutine = "2.22.0"
+datadriven = "1.0.0-RO.26-SNAPSHOT"
+graph = "0.1.0-RO.8-SNAPSHOT"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "velocity" }
+mccoroutine-velocity-api = { module = "com.github.shynixn.mccoroutine:mccoroutine-velocity-api", version.ref = "mccoroutine" }
+mccoroutine-velocity-core = { module = "com.github.shynixn.mccoroutine:mccoroutine-velocity-core", version.ref = "mccoroutine" }
+datadriven = { module = "net.azisaba.data:core", version.ref = "datadriven" }
+graph = { module = "net.azisaba.graph:graph", version.ref = "graph" }
