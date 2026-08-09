@@ -8,10 +8,11 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
+import io.lettuce.core.RedisClient
+import io.lettuce.core.api.StatefulRedisConnection
 import kotlinx.serialization.json.Json
 import net.azisaba.data.config.ConfigHolder
 import net.azisaba.graph.ApiClient
-import net.azisaba.graph.api.PlayersApi
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.TranslationStore
@@ -40,7 +41,8 @@ class Main @Inject constructor(
         request.header("Authentication", "Bearer ${config.get().graphApiKey}")
     }
 
-    val playersApi: PlayersApi = PlayersApi(apiClient)
+    val redisClient: RedisClient = RedisClient.create(config.get().redisUri)
+    val redisConnection: StatefulRedisConnection<String, String> = redisClient.connect()
 
     private val translationStore: TranslationStore.StringBased<MessageFormat> =
         TranslationStore.messageFormat(Key.key(AzisabaVelocity.NAMESPACE, "translations"))
@@ -60,5 +62,8 @@ class Main @Inject constructor(
     @Subscribe
     fun onProxyShutdown(event: ProxyShutdownEvent) {
         GlobalTranslator.translator().removeSource(translationStore)
+
+        redisConnection.close()
+        redisClient.shutdown()
     }
 }

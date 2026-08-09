@@ -8,6 +8,7 @@ velocity = "3.5.0-SNAPSHOT"
 mccoroutine = "2.22.0"
 datadriven = "1.0.0-R0.26-SNAPSHOT"
 graph = "0.1.0-RC.9-SNAPSHOT"
+lettuce = "7.6.0.RELEASE"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -24,3 +25,4 @@ mccoroutine-velocity-api = { module = "com.github.shynixn.mccoroutine:mccoroutin
 mccoroutine-velocity-core = { module = "com.github.shynixn.mccoroutine:mccoroutine-velocity-core", version.ref = "mccoroutine" }
 datadriven = { module = "net.azisaba.data:core", version.ref = "datadriven" }
 graph = { module = "net.azisaba.graph:graph", version.ref = "graph" }
+lettuce-core = { module = "io.lettuce:lettuce-core", version.ref = "lettuce" }

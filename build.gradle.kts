@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.mccoroutine.velocity.core)
     implementation(libs.datadriven)
     implementation(libs.graph)
+    implementation(libs.lettuce.core)
 
     testImplementation(kotlin("test"))
 }
