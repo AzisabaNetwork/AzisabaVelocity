@@ -7,7 +7,7 @@ kotlinx-serialization = "1.11.0"
 velocity = "3.5.0-SNAPSHOT"
 mccoroutine = "2.22.0"
 datadriven = "1.0.0-R0.26-SNAPSHOT"
-graph = "0.1.0-RC.9-SNAPSHOT"
+graph = "0.1.0-RC.11-SNAPSHOT"
 lettuce = "7.6.0.RELEASE"
 
 [plugins]
