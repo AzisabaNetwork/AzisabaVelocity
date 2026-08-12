@@ -208,14 +208,14 @@ class FriendCommand(private val plugin: Main) {
 
         var cursor: String?
         var response = runCatchingApiException {
-            plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, null).await()
+            plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, null, null).await()
         }.getOrElse {
             return 0
         }
 
         repeat(page - 1) {
             cursor = response.nextCursor ?: return 0
-            response = plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, cursor).await()
+            response = plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, cursor, null).await()
         }
 
         source.sendRichMessageWithCustomTags(buildString {
