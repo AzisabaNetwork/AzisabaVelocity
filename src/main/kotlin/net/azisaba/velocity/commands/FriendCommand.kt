@@ -123,11 +123,11 @@ class FriendCommand(private val plugin: Main) {
 
         val friend = plugin.playersApi.getPlayerByUsernameOrMessage(username, source).await() ?: return 0
 
-        if (plugin.playersApi.listPlayerFriendRequests(
-                receiver.id,
+        if (plugin.playersApi.listPlayerFriends(
+                source.uniqueId,
                 1,
                 null,
-                source.uniqueId,
+                friend.id,
             ).await().items.none()
         ) {
             source.sendRichMessage("<red><lang:azisaba.command.friend.remove.not-friend>")
