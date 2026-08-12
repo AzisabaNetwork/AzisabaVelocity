@@ -137,7 +137,7 @@ class FriendCommand(private val plugin: Main) {
                 sender.id,
             ).await().items.none()
         ) {
-            source.sendRichMessage("<red><lang:azisaba.command.friend.accept.request-not-found")
+            source.sendRichMessage("<red><lang:azisaba.command.friend.accept.request-not-found>")
             return 0
         }
 
