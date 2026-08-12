@@ -109,7 +109,9 @@ class FriendCommand(private val plugin: Main) {
 
         runCatchingApiException(source, plugin.logger) {
             plugin.playersApi.addPlayerFriendRequest(receiver.id, source.uniqueId).await()
-        }.getOrNull() ?: return 0
+        }.getOrElse {
+            return 0
+        }
 
         source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.add.requested:'<player:${username}>'><newline><separator>")
 
@@ -121,9 +123,23 @@ class FriendCommand(private val plugin: Main) {
 
         val friend = plugin.playersApi.getPlayerByUsernameOrMessage(username, source).await() ?: return 0
 
+        if (plugin.playersApi.listPlayerFriendRequests(
+                receiver.id,
+                1,
+                null,
+                source.uniqueId,
+            ).await().items.none()
+        ) {
+            source.sendRichMessage("<red><lang:azisaba.command.friend.remove.not-friend>")
+            return 0
+        }
+
+
         runCatchingApiException(source, plugin.logger) {
             plugin.playersApi.removePlayerFriend(source.uniqueId, friend.id).await()
-        }.getOrNull() ?: return 0
+        }.getOrElse {
+            return 0
+        }
 
         source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.remove.removed:'<player:${username}>'><newline><separator>")
 
@@ -148,7 +164,9 @@ class FriendCommand(private val plugin: Main) {
 
         runCatchingApiException(source, plugin.logger) {
             plugin.playersApi.acceptPlayerFriendRequest(source.uniqueId, sender.id).await()
-        }.getOrNull() ?: return 0
+        }.getOrElse {
+            return 0
+        }
 
         source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.accept.accepted:'<player:${username}>'><newline><separator>")
 
@@ -173,7 +191,9 @@ class FriendCommand(private val plugin: Main) {
 
         runCatchingApiException(source, plugin.logger) {
             plugin.playersApi.rejectPlayerFriendRequest(source.uniqueId, sender.id).await()
-        }.getOrNull() ?: return 0
+        }.getOrElse {
+            return 0
+        }
 
         source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.reject.rejected:'<player:${username}>'></green><newline><separator>")
 
@@ -187,7 +207,11 @@ class FriendCommand(private val plugin: Main) {
         require(friendsPerPage > 0) { "friendsPerPage must be positive" }
 
         var cursor: String?
-        var response = plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, null).await()
+        var response = runCatchingApiException {
+            plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, null).await()
+        }.getOrElse {
+            return 0
+        }
 
         repeat(page - 1) {
             cursor = response.nextCursor ?: return 0
