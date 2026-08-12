@@ -1,18 +1,23 @@
 package net.azisaba.velocity
 
 import com.github.shynixn.mccoroutine.velocity.SuspendingPluginContainer
+import com.github.shynixn.mccoroutine.velocity.launch
 import com.google.inject.Inject
+import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
-import io.lettuce.core.RedisClient
-import io.lettuce.core.api.StatefulRedisConnection
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import net.azisaba.data.config.ConfigHolder
 import net.azisaba.graph.ApiClient
+import net.azisaba.graph.api.PlayersApi
+import net.azisaba.graph.api.StreamApi
+import net.azisaba.velocity.commands.FriendCommand
+import net.azisaba.velocity.listeners.listenStreamEvents
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.TranslationStore
@@ -28,24 +33,30 @@ private val jsonFormat = Json {
 
 @Plugin(id = AzisabaVelocity.NAMESPACE)
 class Main @Inject constructor(
-    private val server: ProxyServer,
-    private val logger: Logger,
+    val server: ProxyServer,
+    val logger: Logger,
     @DataDirectory private val dataDirectory: Path,
-    suspendingPluginContainer: SuspendingPluginContainer,
+    private val suspendingPluginContainer: SuspendingPluginContainer,
 ) {
     val config: ConfigHolder<Config> = ConfigHolder(Config.serializer(), jsonFormat).apply {
         bootstrap(dataDirectory.resolve("config.json"), Config())
     }
 
     val apiClient: ApiClient = ApiClient().setRequestInterceptor { request ->
-        request.header("Authentication", "Bearer ${config.get().graphApiKey}")
+        request.header("Authorization", "Bearer ${config.get().graphApiKey}")
     }
 
-    val redisClient: RedisClient = RedisClient.create(config.get().redisUri)
-    val redisConnection: StatefulRedisConnection<String, String> = redisClient.connect()
+    val playersApi: PlayersApi by lazy {
+        PlayersApi(apiClient)
+    }
 
-    private val translationStore: TranslationStore.StringBased<MessageFormat> =
-        TranslationStore.messageFormat(Key.key(AzisabaVelocity.NAMESPACE, "translations"))
+    val streamApi: StreamApi by lazy {
+        StreamApi(apiClient)
+    }
+
+    private val translationStore: TranslationStore.StringBased<MessageFormat> = TranslationStore.messageFormat(
+        Key.key(AzisabaVelocity.NAMESPACE, "translations")
+    )
 
     init {
         suspendingPluginContainer.initialize(this)
@@ -57,13 +68,24 @@ class Main @Inject constructor(
     @Subscribe
     fun onProxyInitialize(event: ProxyInitializeEvent) {
         GlobalTranslator.translator().addSource(translationStore)
+
+        registerCommand(FriendCommand(this).build().let(::BrigadierCommand))
+
+        suspendingPluginContainer.pluginContainer.launch(Dispatchers.IO) {
+            listenStreamEvents(this@Main)
+        }
     }
 
     @Subscribe
     fun onProxyShutdown(event: ProxyShutdownEvent) {
         GlobalTranslator.translator().removeSource(translationStore)
+    }
 
-        redisConnection.close()
-        redisClient.shutdown()
+    private fun registerCommand(command: BrigadierCommand) {
+        val commandMeta = server.commandManager.metaBuilder(command)
+            .plugin(this)
+            .build()
+
+        server.commandManager.register(commandMeta, command)
     }
 }
