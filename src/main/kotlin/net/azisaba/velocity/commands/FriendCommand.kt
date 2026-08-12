@@ -10,6 +10,9 @@ import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import kotlinx.coroutines.future.await
 import net.azisaba.velocity.Main
+import net.azisaba.velocity.commands.suggestion.FriendRequestSuggestionProvider
+import net.azisaba.velocity.commands.suggestion.FriendSuggestionProvider
+import net.azisaba.velocity.commands.suggestion.OnlinePlayerSuggestionProvider
 import net.azisaba.velocity.util.getPlayerByUsernameOrMessage
 import net.azisaba.velocity.util.runCatchingApiException
 import net.azisaba.velocity.util.sendRichMessageWithCustomTags
@@ -28,6 +31,7 @@ class FriendCommand(private val plugin: Main) {
                                     StringArgumentType.getString(context, "player"),
                                 )
                             }
+                            .suggests(OnlinePlayerSuggestionProvider(plugin.server))
                     )
             )
             .then(
@@ -40,6 +44,7 @@ class FriendCommand(private val plugin: Main) {
                                     StringArgumentType.getString(context, "player"),
                                 )
                             }
+                            .suggests(FriendSuggestionProvider(plugin.playersApi))
                     )
             )
             .then(
@@ -52,6 +57,7 @@ class FriendCommand(private val plugin: Main) {
                                     StringArgumentType.getString(context, "player"),
                                 )
                             }
+                            .suggests(FriendRequestSuggestionProvider(plugin.playersApi))
                     )
             )
             .then(
@@ -64,6 +70,7 @@ class FriendCommand(private val plugin: Main) {
                                     StringArgumentType.getString(context, "player"),
                                 )
                             }
+                            .suggests(FriendRequestSuggestionProvider(plugin.playersApi))
                     )
             )
             .then(
@@ -102,7 +109,6 @@ class FriendCommand(private val plugin: Main) {
 
         runCatchingApiException(source, plugin.logger) {
             plugin.playersApi.addPlayerFriendRequest(receiver.id, source.uniqueId).await()
-            println("done!")
         }.getOrNull() ?: return 0
 
         source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.add.requested:'<player:${username}>'><newline><separator>")
@@ -117,7 +123,6 @@ class FriendCommand(private val plugin: Main) {
 
         runCatchingApiException(source, plugin.logger) {
             plugin.playersApi.removePlayerFriend(source.uniqueId, friend.id).await()
-            println("done")
         }.getOrNull() ?: return 0
 
         source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.remove.removed:'<player:${username}>'><newline><separator>")
