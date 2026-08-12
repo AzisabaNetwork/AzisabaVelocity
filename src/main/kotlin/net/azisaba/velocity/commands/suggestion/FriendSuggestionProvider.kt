@@ -23,7 +23,7 @@ class FriendSuggestionProvider(private val playersApi: PlayersApi) : SuggestionP
         player: Player,
         cursor: String? = null,
     ): CompletableFuture<Suggestions> {
-        return playersApi.listPlayerFriends(player.uniqueId, 100, cursor)
+        return playersApi.listPlayerFriends(player.uniqueId, 100, cursor, null)
             .thenCompose { response ->
                 response.items
                     .map { it.username }
