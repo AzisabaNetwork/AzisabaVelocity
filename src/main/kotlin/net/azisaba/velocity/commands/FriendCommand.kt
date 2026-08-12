@@ -85,6 +85,8 @@ class FriendCommand(private val plugin: Main) {
     }
 
     private suspend fun addFriend(source: Player, username: String): Int {
+        source.sendRichMessage("<gray><lang:azisaba.command.friend.add.requesting>")
+
         val receiver = plugin.playersApi.getPlayerByUsernameOrMessage(username, source).await() ?: return 0
 
         if (plugin.playersApi.listPlayerFriendRequests(
@@ -109,6 +111,8 @@ class FriendCommand(private val plugin: Main) {
     }
 
     private suspend fun removeFriend(source: Player, username: String): Int {
+        source.sendRichMessage("<gray><lang:azisaba.command.friend.remove.removing>")
+
         val friend = plugin.playersApi.getPlayerByUsernameOrMessage(username, source).await() ?: return 0
 
         runCatchingApiException(source, plugin.logger) {
@@ -122,6 +126,8 @@ class FriendCommand(private val plugin: Main) {
     }
 
     private suspend fun acceptFriendRequest(source: Player, username: String): Int {
+        source.sendRichMessage("<gray><lang:azisaba.command.friend.accept.accepting>")
+
         val sender = plugin.playersApi.getPlayerByUsernameOrMessage(username, source).await() ?: return 0
 
         if (plugin.playersApi.listPlayerFriendRequests(
@@ -145,6 +151,8 @@ class FriendCommand(private val plugin: Main) {
     }
 
     private suspend fun rejectFriendRequest(source: Player, username: String): Int {
+        source.sendRichMessage("<gray><lang:azisaba.command.friend.reject.rejecting>")
+
         val sender = plugin.playersApi.getPlayerByUsernameOrMessage(username, source).await() ?: return 0
 
         if (plugin.playersApi.listPlayerFriendRequests(
@@ -168,6 +176,8 @@ class FriendCommand(private val plugin: Main) {
     }
 
     private suspend fun listFriends(source: Player, page: Int, friendsPerPage: Int = 8): Int {
+        source.sendRichMessage("<gray><lang:azisaba.command.friend.list.loading>")
+
         require(page > 0) { "page must be positive" }
         require(friendsPerPage > 0) { "friendsPerPage must be positive" }
 
