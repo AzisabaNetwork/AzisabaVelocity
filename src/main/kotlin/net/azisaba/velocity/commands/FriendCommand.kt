@@ -2,6 +2,7 @@ package net.azisaba.velocity.commands
 
 import com.github.shynixn.mccoroutine.velocity.executesSuspend
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.tree.LiteralCommandNode
 import com.velocitypowered.api.command.BrigadierCommand
@@ -61,6 +62,21 @@ class FriendCommand(private val plugin: Main) {
                                 rejectFriendRequest(
                                     context.source as Player,
                                     StringArgumentType.getString(context, "player"),
+                                )
+                            }
+                    )
+            )
+            .then(
+                BrigadierCommand.literalArgumentBuilder("list")
+                    .executesSuspend(plugin) { context ->
+                        listFriends(context.source as Player, 1)
+                    }
+                    .then(
+                        BrigadierCommand.requiredArgumentBuilder("page", IntegerArgumentType.integer(1))
+                            .executesSuspend(plugin) { context ->
+                                listFriends(
+                                    context.source as Player,
+                                    IntegerArgumentType.getInteger(context, "page"),
                                 )
                             }
                     )
@@ -146,7 +162,56 @@ class FriendCommand(private val plugin: Main) {
             plugin.playersApi.rejectPlayerFriendRequest(source.uniqueId, sender.id).await()
         }.getOrNull() ?: return 0
 
-        source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.reject.rejected:'<player:${username}>'><newline><separator>")
+        source.sendRichMessageWithCustomTags("<separator><newline><green><lang:azisaba.command.friend.reject.rejected:'<player:${username}>'></green><newline><separator>")
+
+        return Command.SINGLE_SUCCESS
+    }
+
+    private suspend fun listFriends(source: Player, page: Int, friendsPerPage: Int = 8): Int {
+        require(page > 0) { "page must be positive" }
+        require(friendsPerPage > 0) { "friendsPerPage must be positive" }
+
+        var cursor: String?
+        var response = plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, null).await()
+
+        repeat(page - 1) {
+            cursor = response.nextCursor ?: return 0
+            response = plugin.playersApi.listPlayerFriends(source.uniqueId, friendsPerPage, cursor).await()
+        }
+
+        source.sendRichMessageWithCustomTags(buildString {
+            append("<separator><newline>")
+            append("<lang:azisaba.command.friend.list.title:'${page}'><newline>")
+
+            val friends = response.items + List(friendsPerPage - response.items.size) { null }
+            friends.forEach { friend ->
+                if (friend != null) {
+                    append("<player:${friend.username}>")
+                }
+                append("<newline>")
+            }
+
+            val hasPrevious = page > 1
+            val hasNext = response.nextCursor != null
+
+            if (hasPrevious || hasNext) {
+                if (hasPrevious) {
+                    append("<click:run_command:/friend list ${page - 1}><yellow>\\<\\< <lang:azisaba.command.friend.list.previous></yellow></click>")
+                }
+
+                if (hasPrevious && hasNext) {
+                    append("<dark_gray> - </dark_gray>")
+                }
+
+                if (hasNext) {
+                    append("<click:run_command:/friend list ${page + 1}><yellow><lang:azisaba.command.friend.list.next> >></yellow></click>")
+                }
+
+                append("<newline>")
+            }
+
+            append("<separator>")
+        })
 
         return Command.SINGLE_SUCCESS
     }
