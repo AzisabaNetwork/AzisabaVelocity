@@ -2,6 +2,7 @@ package net.azisaba.velocity
 
 import com.github.shynixn.mccoroutine.velocity.SuspendingPluginContainer
 import com.github.shynixn.mccoroutine.velocity.launch
+import com.github.shynixn.mccoroutine.velocity.registerSuspend
 import com.google.inject.Inject
 import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.event.Subscribe
@@ -17,6 +18,7 @@ import net.azisaba.graph.ApiClient
 import net.azisaba.graph.api.PlayersApi
 import net.azisaba.graph.api.StreamApi
 import net.azisaba.velocity.commands.FriendCommand
+import net.azisaba.velocity.listeners.PendingFriendRequestListener
 import net.azisaba.velocity.listeners.listenStreamEvents
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.translation.GlobalTranslator
@@ -70,6 +72,8 @@ class Main @Inject constructor(
         GlobalTranslator.translator().addSource(translationStore)
 
         registerCommand(FriendCommand(this).build().let(::BrigadierCommand))
+
+        server.eventManager.registerSuspend(this, PendingFriendRequestListener(this))
 
         suspendingPluginContainer.pluginContainer.launch(Dispatchers.IO) {
             listenStreamEvents(this@Main)
