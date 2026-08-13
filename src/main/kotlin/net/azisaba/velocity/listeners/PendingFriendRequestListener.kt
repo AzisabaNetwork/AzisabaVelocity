@@ -3,10 +3,10 @@ package net.azisaba.velocity.listeners
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.player.ServerPostConnectEvent
 import kotlinx.coroutines.future.await
-import net.azisaba.velocity.Main
+import net.azisaba.graph.api.PlayersApi
 import net.azisaba.velocity.util.sendRichMessageWithCustomTags
 
-class PendingFriendRequestListener(private val plugin: Main) {
+class PendingFriendRequestListener(private val playersApi: PlayersApi) {
     @Subscribe
     suspend fun onServerPostConnect(event: ServerPostConnectEvent) {
         if (event.previousServer != null) {
@@ -17,7 +17,7 @@ class PendingFriendRequestListener(private val plugin: Main) {
             var cursor: String? = null
 
             do {
-                val response = plugin.playersApi.listPlayerFriendRequests(
+                val response = playersApi.listPlayerFriendRequests(
                     event.player.uniqueId,
                     100,
                     cursor,

@@ -19,6 +19,7 @@ import net.azisaba.graph.api.PlayersApi
 import net.azisaba.graph.api.StreamApi
 import net.azisaba.velocity.commands.FriendCommand
 import net.azisaba.velocity.listeners.PendingFriendRequestListener
+import net.azisaba.velocity.listeners.PlayerStateSyncListener
 import net.azisaba.velocity.listeners.listenStreamEvents
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.translation.GlobalTranslator
@@ -73,7 +74,8 @@ class Main @Inject constructor(
 
         registerCommand(FriendCommand(this).build().let(::BrigadierCommand))
 
-        server.eventManager.registerSuspend(this, PendingFriendRequestListener(this))
+        server.eventManager.registerSuspend(this, PendingFriendRequestListener(playersApi))
+        server.eventManager.registerSuspend(this, PlayerStateSyncListener(playersApi))
 
         suspendingPluginContainer.pluginContainer.launch(Dispatchers.IO) {
             listenStreamEvents(this@Main)
