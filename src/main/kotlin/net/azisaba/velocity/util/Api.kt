@@ -9,7 +9,7 @@ import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 
 fun PlayersApi.getPlayerByUsername(username: String): CompletableFuture<Player> {
-    return listPlayers(1, null, username, null, null).thenApply { response ->
+    return listPlayers(1, null, username, null, null, null, null, null, null, null, null, null).thenApply { response ->
         response.items.singleOrNull()
     }
 }
@@ -17,7 +17,9 @@ fun PlayersApi.getPlayerByUsername(username: String): CompletableFuture<Player> 
 fun PlayersApi.getPlayerByUsernameOrMessage(username: String, audience: Audience): CompletableFuture<Player> {
     return getPlayerByUsername(username).thenApply { player ->
         if (player == null) {
-            audience.sendMessage(MiniMessage.miniMessage().deserialize("<red><lang:azisaba.error.player-not-found:'${username}'>"))
+            audience.sendMessage(
+                MiniMessage.miniMessage().deserialize("<red><lang:azisaba.error.player-not-found:'${username}'>")
+            )
         }
 
         player
